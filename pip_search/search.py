@@ -8,14 +8,14 @@ from packaging.specifiers import SpecifierSet
 
 def is_python_version_compatible(specifier: str, python_version: str) -> bool:
     """
-    指定された Python バージョンが、指定されたバージョン条件に合致するかどうかを判断します。
+    Determines if the specified Python version matches the given version specifier.
 
     Args:
-        specifier (str): バージョン条件を示す文字列。
-        python_version (str): チェックする Python バージョン。
+        specifier (str): A string representing the version specifier.
+        python_version (str): The Python version to check.
 
     Returns:
-        bool: バージョンが条件に合致する場合は True、そうでない場合は False。
+        bool: True if the version matches the specifier, False otherwise.
     """
     try:
         return version.parse(python_version) in SpecifierSet(specifier)
@@ -26,14 +26,14 @@ def is_python_version_compatible(specifier: str, python_version: str) -> bool:
 
 def search_package_versions(python_version: str, package_name: str) -> List[str]:
     """
-    指定された Python バージョンに対応するパッケージのバージョンを検索します。
+    Searches for package versions compatible with the specified Python version.
 
     Args:
-        python_version (str): 対象の Python バージョン。
-        package_name (str): 検索するパッケージ名。
+        python_version (str): The target Python version.
+        package_name (str): The package name to search.
 
     Returns:
-        List[str]: 対応するバージョンのリスト。
+        List[str]: A list of compatible versions.
     """
     url = f"https://pypi.org/pypi/{package_name}/json"
     response = requests.get(url)
@@ -42,29 +42,29 @@ def search_package_versions(python_version: str, package_name: str) -> List[str]
         versions = package_data.get("releases", {})
         compatible_versions = []
         for version_string, releases in versions.items():
-            if releases:  # リリースが存在する場合のみチェック
-                release = releases[-1]  # 最新のリリース情報を使用
+            if releases:  # Only check if there are releases
+                release = releases[-1]  # Use the latest release information
                 requires_python = release.get("requires_python", "")
                 if requires_python is None:
-                    # requires_python fieldがNoneの場合は判定できないのでスキップ
-                    # 最近のライブラリでは指定されているが、古いライブラリでは指定されていないことがある
+                    # Skip if requires_python field is None
+                    # It's specified in recent libraries but may be missing in older ones
                     continue
                 if is_python_version_compatible(requires_python, python_version):
                     compatible_versions.append(version_string)
         return compatible_versions
     else:
-        print(f"{package_name} のパッケージデータの取得に失敗しました。")
+        print(f"Failed to retrieve package data for {package_name}.")
         return []
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="指定された Python バージョンに対応するパッケージのバージョンを検索します。"
+        description="Searches for package versions compatible with a specified Python version."
     )
-    parser.add_argument("python_version", help="Python バージョン")
-    parser.add_argument("package_name", help="パッケージ名")
+    parser.add_argument("python_version", help="Python version")
+    parser.add_argument("package_name", help="Package name")
     parser.add_argument(
-        "-a", "--all", action="store_true", help="利用可能な全バージョンを表示"
+        "-a", "--all", action="store_true", help="Display all available versions"
     )
 
     args = parser.parse_args()
@@ -76,7 +76,9 @@ if __name__ == "__main__":
 
     if compatible_versions:
         if args.all:
-            print(f"{package_name} の {python_version} 用の全利用可能バージョン:")
+            print(
+                f"All available versions for {package_name} compatible with Python {python_version}:"
+            )
             sorted_versions = sorted(
                 compatible_versions, key=lambda x: version.parse(x)
             )
@@ -84,9 +86,11 @@ if __name__ == "__main__":
                 print(version)
         else:
             max_version = max(compatible_versions, key=lambda x: version.parse(x))
-            print(f"{package_name} の {python_version} 用の最大互換バージョン:")
+            print(
+                f"Maximum compatible version for {package_name} with Python {python_version}:"
+            )
             print(max_version)
     else:
         print(
-            f"{package_name} の {python_version} 用の互換バージョンは見つかりませんでした。"
+            f"No compatible versions found for {package_name} with Python {python_version}."
         )
