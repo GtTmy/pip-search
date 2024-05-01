@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pip-search"
+version = "0.1.0"
+description = ""
+authors = ["GtTmy <tomoya.gotoh.wind@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+packaging = "^24.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+ruff = "^0.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
